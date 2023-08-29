@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Plots with D3.js</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .container {
+      text-align: center;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Plots with D3.js</h1>
+
+  <div class="container">
+    <label for="plotType">Select Plot Type:</label>
+    <select id="plotType">
+      <option value="dt">Decision Tree</option>
+      <option value="naive">Naive Bayes</option>
+    </select>
+    <button id="showPlots">Show Plots</button>
+  </div>
+
+  <div id="plotsContainer"></div>
+
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script type="text/javascript">
+    document.getElementById('showPlots').addEventListener('click', function() {
+      var plotType = document.getElementById('plotType').value;
+      var plotsContainer = document.getElementById('plotsContainer');
+      
+      // Clear previous plots
+      plotsContainer.innerHTML = '';
+      
+      // Create iframe to load corresponding plots
+      var iframe = document.createElement('iframe');
+      iframe.src = plotType + '.html';  // Load "dt.html" or "naive.html"
+      iframe.width = '100%';
+      iframe.height = '600px';
+      plotsContainer.appendChild(iframe);
+    });
+  </script>
+</body>
+</html>
