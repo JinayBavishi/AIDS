@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Plots</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .plot-container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 20px auto;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    
+    #confusion_matrix_div, #bar_chart_div, #roc_curve_div {
+      width: 100%;
+      height: 400px;
+      margin-top: 20px;
+    }
+  </style>
+  <!-- Include Google Charts API library -->
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+  <h1>Plots</h1>
+  
+  <!-- Feature Importances Plot Container -->
+  <div class="plot-container">
+    <h2>Feature Importances</h2>
+    <div id="bar_chart_div"></div>
+  </div>
+  
+  <!-- ROC Curve Plot Container -->
+  <div class="plot-container">
+    <h2>ROC Curve</h2>
+    <div id="roc_curve_div"></div>
+  </div>
+
+   <!-- Confusion Matrix Plot Container -->
+   <div class="plot-container">
+    <h2>Confusion Matrix</h2>
+    <div id="confusion_matrix_div"></div>
+  </div>
+  <!-- Load the JSON data and scripts -->
+  <script type="text/javascript">
+    // Load the Google Charts API
+    google.charts.load('current', {'packages':['corechart', 'table']});
+    google.charts.setOnLoadCallback(drawPlots);
+
+    function drawPlots() {
+      fetch('naive.json')
+        .then(response => response.json())
+        .then(plotData => {
+          // Draw Confusion Matrix as a table
+          var cmData = plotData.confusion_matrix;
+          var cmTableData = new google.visualization.DataTable();
+          cmTableData.addColumn('number', 'Actual 0');
+          cmTableData.addColumn('number', 'Actual 1');
+          cmTableData.addRow(cmData[0]);
+          cmTableData.addRow(cmData[1]);
+          var cmOptions = {
+            title: 'Confusion Matrix',
+            showRowNumber: true
+          };
+          var cmTable = new google.visualization.Table(document.getElementById('confusion_matrix_div'));
+          cmTable.draw(cmTableData, cmOptions);
+
+          // Draw Feature Importances bar chart
+          var barChartData = plotData.feature_importances;
+          var barChartDataTable = new google.visualization.DataTable();
+          barChartDataTable.addColumn('string', 'Feature');
+          barChartDataTable.addColumn('number', 'Importance');
+          for (var i = 0; i < barChartData.features.length; i++) {
+            barChartDataTable.addRow([barChartData.features[i], barChartData.importances[i]]);
+          }
+          var barChartOptions = {
+            title: 'Feature Importances',
+            hAxis: { title: 'Feature Importance' },
+            vAxis: { title: 'Features' },
+            bars: 'horizontal'
+          };
+          var barChart = new google.visualization.BarChart(document.getElementById('bar_chart_div'));
+          barChart.draw(barChartDataTable, barChartOptions);
+
+          // Draw ROC Curve line chart
+          var rocData = plotData.roc_curve;
+          var rocCurveDataTable = new google.visualization.DataTable();
+          rocCurveDataTable.addColumn('number', 'False Positive Rate');
+          rocCurveDataTable.addColumn('number', 'True Positive Rate');
+          for (var i = 0; i < rocData.fpr.length; i++) {
+            rocCurveDataTable.addRow([rocData.fpr[i], rocData.tpr[i]]);
+          }
+          var rocCurveOptions = {
+            title: 'Receiver Operating Characteristic (ROC) Curve',
+            hAxis: { title: 'False Positive Rate' },
+            vAxis: { title: 'True Positive Rate' }
+          };
+          var rocCurveChart = new google.visualization.LineChart(document.getElementById('roc_curve_div'));
+          rocCurveChart.draw(rocCurveDataTable, rocCurveOptions);
+        });
+    }
+  </script>
+</body>
+</html>
