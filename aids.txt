@@ -1,0 +1,353 @@
+Text
+
+import pandas as pd
+import numpy as np
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+ham_messages = data[data['Category'] == 'ham']['Message']
+ham_wordcloud = WordCloud(width=400, height=400, background_color='white').generate(' '.join(ham_messages))
+ham_messages = data[data['Category'] == 'ham']['Message']
+plt.imshow(ham_wordcloud)
+plt.show()
+
+
+
+Graph
+
+import networkx as nx
+import matplotlib.pyplot as plt
+graph = nx.Graph()
+graph.add_nodes_from([1, 2, 3, 4, 5])
+graph.add_edges_from([(1, 2), (2, 5), (3, 4), (4, 5), (5, 3)])
+nx.draw(graph, with_labels=True)
+plt.show()
+degree_centralities = nx.degree_centrality(graph)
+for node, centrality in degree_centralities.items():
+    print(f"Node {node}: Degree Centrality = {centrality}")
+
+
+
+Map
+
+import folium
+# Keep only the desired columns
+columns_to_keep = ['latitude', 'longitude', 'Output']
+data = data[columns_to_keep]
+df = data
+
+for index, row in df.iterrows():
+    if row['Output'] == 'Yes':
+        marker_color = 'blue'
+    else:
+        marker_color = 'red'
+    folium.Marker(location=[row['latitude'], row['longitude']], icon=folium.Icon(color=marker_color)).add_to(map_bangalore)
+
+# Display the map
+map_bangalore
+
+
+
+Image 
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+def plot_rgb_histogram(image_path):
+    # Load the image
+    image_rgb = cv2.imread(image_path)
+
+    red_channel = image_rgb[:, :, 0]
+    green_channel = image_rgb[:, :, 1]
+    blue_channel = image_rgb[:, :, 2]
+
+    red_hist = np.histogram(red_channel, bins=256, range=(0, 256))[0]
+    green_hist = np.histogram(green_channel, bins=256, range=(0, 256))[0]
+    blue_hist = np.histogram(blue_channel, bins=256, range=(0, 256))[0]
+
+    plt.figure(figsize=(12, 6))
+
+    plt.subplot(131)
+    plt.plot(red_hist, color='red')
+    plt.title('Red Channel Histogram')
+    plt.xlabel('Intensity')
+    plt.ylabel('Frequency')
+
+    plt.subplot(132)
+    plt.plot(green_hist, color='green')
+    plt.title('Green Channel Histogram')
+    plt.xlabel('Intensity')
+    plt.ylabel('Frequency')
+
+    plt.subplot(133)
+    plt.plot(blue_hist, color='blue')
+    plt.title('Blue Channel Histogram')
+    plt.xlabel('Intensity')
+    plt.ylabel('Frequency')
+
+    plt.tight_layout()
+    plt.show()
+
+image_path = 'image.jpeg'
+plot_rgb_histogram(image_path)
+
+
+
+Audio
+
+import librosa
+import librosa.display
+import IPython.display as ipd
+import matplotlib.pyplot as plt
+
+audio_file = 'audio.mp3'
+signal, sr = librosa.load(audio_file, sr=None)
+
+# Visualize waveform
+plt.figure(figsize=(14, 5))
+plt.plot(signal)
+plt.title('Waveform')
+plt.xlabel('Time (samples)')
+plt.ylabel('Amplitude')
+plt.show()
+
+
+
+
+Video
+
+import cv2
+import matplotlib.pyplot as plt
+
+# Load the video file
+video_file = 'video.mp4'
+cap = cv2.VideoCapture(video_file)
+
+# Get the video's frame rate and total number of frames
+fps = cap.get(cv2.CAP_PROP_FPS)
+total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+# Read and display the first frame
+ret, frame = cap.read()
+plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+plt.title('First Frame')
+plt.axis('off')
+plt.show()
+
+# Read and display the last frame
+cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames - 1)
+ret, frame = cap.read()
+plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+plt.title('Last Frame')
+plt.axis('off')
+plt.show()
+
+# Release the video file
+cap.release()
+
+cap = cv2.VideoCapture(video_file)
+frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+fps = cap.get(cv2.CAP_PROP_FPS)
+cap.release()
+plt.scatter(frame_count, fps)
+plt.xlabel('Frame Count')
+plt.ylabel('Frames per Second (FPS)')
+plt.title('Frame Count vs. FPS for Video File')
+plt.show()
+
+
+motion detection
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+def main():
+    # Set up video capture
+    video_path = "/content/SampleVideo_1280x720_1mb.mp4"  # Replace with your video file path
+    cap = cv2.VideoCapture(video_path)
+
+    if not cap.isOpened():
+        print("Error opening video file.")
+        return
+
+    # Read the first frame to initialize the background model
+    ret, prev_frame = cap.read()
+    if not ret:
+        print("Error reading video frame.")
+        return
+
+    # Convert the frame to grayscale
+    prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+
+    # Variables to store motion detection information
+    motion_frames = 0
+    motion_durations = []
+
+    while True:
+        ret, frame = cap.read()
+
+        if not ret:
+            break
+
+        # Convert the current frame to grayscale
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Compute the absolute difference between the current frame and the previous frame
+        frame_diff = cv2.absdiff(gray, prev_gray)
+
+        # Threshold the difference image to detect motion
+        _, thresh = cv2.threshold(frame_diff, 25, 255, cv2.THRESH_BINARY)
+
+        # Find contours in the thresholded image
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        motion_detected = False
+        # Check if motion is detected in the frame
+        for contour in contours:
+            if cv2.contourArea(contour) > 500:  # Adjust this threshold as needed
+                motion_detected = True
+                break
+
+        if motion_detected:
+            motion_frames += 1
+        else:
+            if motion_frames > 0:
+                motion_durations.append(motion_frames)
+            motion_frames = 0
+
+        # Update the previous frame
+        prev_gray = gray
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+    # Create the final plot of motion durations
+    plt.figure(figsize=(10, 6))
+    plt.plot(np.arange(len(motion_durations)), motion_durations, marker='o')
+    plt.xlabel('Motion Event')
+    plt.ylabel('Frames with Motion')
+    plt.title('Motion Detection Summary')
+    plt.grid(True)
+    plt.show()
+
+if __name__ == "__main__":
+    main()
+
+
+Fuzzy
+
+import skfuzzy as fuzz
+import numpy as np
+x = np.array([0, 1, 2, 3])
+A = [0.2,0.3,0.4,0.5]
+B = [0.1,0.2,0.2,1]
+fuzzy_union = fuzz.fuzzy_or(x, A, x, B)
+fuzzy_inter = fuzz.fuzzy_and(x, A, x, B)
+fuzzy_compA = [1 - A_value for A_value in A]
+fuzzy_compB = [1 - B_value for B_value in B]
+algebraic_sum = [A + B - A * B for A, B in zip(A, B)]
+algebraic_prod = [A * B for A, B in zip(A, B)]
+bounded_sum = [min(A + B, 1) for A, B in zip(A, B)]
+bounded_difference = [max(A - B, 0) for A, B in zip(A, B)]
+fuzzy_AB = fuzz.fuzzy_and(x, A, x, fuzzy_compB)
+fuzzy_BA = fuzz.fuzzy_and(x, B, x, fuzzy_compA)
+print(fuzzy_union,fuzzy_inter,algebraic_sum,algebraic_prod,bounded_sum,bounded_difference,fuzzy_AB,fuzzy_BA)
+
+
+Google chart-
+html-
+<!DOCTYPE html>
+<head>
+   <title>Heart Health Charts</title>
+</head>
+<body>
+    <div id="description">
+        <h1>Heart Health Dataset Visualization</h1>
+        <p>This webpage displays visualizations of the Heart Health dataset. The dataset includes information about individuals' age, maximum heart rate, cholesterol levels, and target values.</p>
+    </div>
+    <div id="googleChartContainer"></div>
+    <div id="googlePieChartContainer"></div>
+    <div id="googleCholChartContainer"></div>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
+script.js-
+google.charts.load('current', { 'packages': ['corechart'] });
+google.charts.setOnLoadCallback(drawCharts);
+
+function drawCharts() {
+    // Sample data
+    var data = [
+        { age: 52, thalach: 168, chol: 212, target: 0 },
+        { age: 53, thalach: 155, chol: 203, target: 1 },
+        { age: 70, thalach: 125, chol: 174, target: 0 },
+        { age: 61, thalach: 161, chol: 203, target: 1 },
+        { age: 62, thalach: 106, chol: 294, target: 0 }
+        // Add more data...
+    ];
+
+    // Google Chart - Line Chart
+    var googleDataLine = new google.visualization.DataTable();
+    googleDataLine.addColumn('string', 'Age');
+    googleDataLine.addColumn('number', 'Maximum Heart Rate');
+
+    data.forEach(function (entry) {
+        googleDataLine.addRow([entry.age.toString(), entry.thalach]);
+    });
+
+    var googleChartLine = new google.visualization.LineChart(document.getElementById('googleChartContainer'));
+    googleChartLine.draw(googleDataLine, {
+        title: 'Age vs. Maximum Heart Rate',
+        hAxis: { title: 'Age' },
+        vAxis: { title: 'Maximum Heart Rate' },
+        colors: ['#4285F4'],
+        legend: 'none',
+        lineWidth: 2,
+        pointSize: 6,
+        backgroundColor: { fill: 'transparent' },
+        chartArea: { width: '80%', height: '70%' },
+    });
+
+    // Google Chart - Pie Chart
+    var targetData = google.visualization.arrayToDataTable([
+        ['Target', 'Count'],
+        ['Target 0', countTarget(data, 0)],
+        ['Target 1', countTarget(data, 1)]
+    ]);
+
+    var googleChartPie = new google.visualization.PieChart(document.getElementById('googlePieChartContainer'));
+    googleChartPie.draw(targetData, {
+        title: 'Distribution of Targets',
+        colors: ['#0F9D58', '#DB4437'],
+        chartArea: { width: '80%', height: '70%' },
+    });
+
+    // Google Chart - Column Chart for 'chol' values
+    var googleDataChol = new google.visualization.DataTable();
+    googleDataChol.addColumn('string', 'Age');
+    googleDataChol.addColumn('number', 'Cholesterol Level');
+
+    data.forEach(function (entry) {
+        googleDataChol.addRow([entry.age.toString(), entry.chol]);
+    });
+
+    var googleChartChol = new google.visualization.ColumnChart(document.getElementById('googleCholChartContainer'));
+    googleChartChol.draw(googleDataChol, {
+        title: 'Age vs. Cholesterol Level',
+        hAxis: { title: 'Age' },
+        vAxis: { title: 'Cholesterol Level' },
+        colors: ['#EA4335'],
+        legend: 'none',
+        backgroundColor: { fill: 'transparent' },
+        chartArea: { width: '80%', height: '70%' },
+    });
+}
+
+function countTarget(data, targetValue) {
+    return data.filter(function (entry) {
+        return entry.target === targetValue;
+    }).length;
+}
